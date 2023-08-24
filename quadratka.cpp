@@ -7,43 +7,42 @@
 #include <math.h>
 #include <stdio.h>
 
-void read_coeffs (double* input_a, double* input_b, double* input_c);
-int quadratic_solver (const double a, const double b, const double c,
-                        double* x1, double* x2);
+void read_coeffs ( struct coeffs* adres_input );
+int quadratic_solver (const struct coeffs* adres_input,  double* x1, double* x2);
 void check_input (double* check_coeff);
 int is_it_zer0 (const double num, const char operation);
 void clear_buf (void);
 void restart (char* ch);
 void output (int nRoots, double* x1, double* x2);
 
-void read_coeffs_asserts (double* input_a, double* input_b, double* input_c);
-void quadratic_slover_asserts (const double a, const double b, const double c,
-                        double* x1, double* x2);
-void check_input_asserts (void);
-void is_it_zer0_asserts (void);
-void output_asserts (void);
 
-
-
+struct coeffs
+{
+    double a, b, c;
+};
 
 
 
 int main (void)
 {
+    
     printf("Я ожидаю от Вас квадратное уравнение вида"
-           " ax^2+bx+c=0");
+           " ax^2+bx+c=0\n");
     while (true)
     {
-        double a = 0, b = 0, c = 0;
+
+        struct coeffs input = {0,0,0};
         char ch = 0;
         int nRoots = 0;
+        
 
-        read_coeffs (&a, &b, &c);
+        read_coeffs (&input);
         printf ("Ваши коэффициенты:\n"
-               "a = %f b = %f, c = %f\n", a, b, c);
+               "a = %f b = %f, c = %f\n", input.a, input.b, 
+                                        input.c);
 
         double x1 = 0, x2 = 0;
-        nRoots = quadratic_solver (a, b, c, &x1, &x2);
+        nRoots = quadratic_solver (&input, &x1, &x2);
         output (nRoots, &x1, &x2);
 
         restart(&ch);
@@ -57,24 +56,24 @@ int main (void)
     return 0;
 }
 
-void read_coeffs (double* input_a, double* input_b, double* input_c)
+void read_coeffs (struct coeffs* adres_input)
 {   
-    assert ( !isnan (*input_a) );
-    assert ( !isnan (*input_b) );
-    assert ( !isnan (*input_c) );
-    assert (isfinite (*input_a));
-    assert (isfinite (*input_b));
-    assert (isfinite (*input_c));
+    assert ( !isnan (adres_input->a) );
+    assert ( !isnan ((*adres_input).b) );
+    assert ( !isnan (adres_input->c) );
+    assert (isfinite ((*adres_input).a));
+    assert (isfinite (adres_input->b));
+    assert (isfinite ((*adres_input).c));
 
     printf ("Введите коэффициенты\n");
     printf ("a=");
-    check_input (input_a);
+    check_input ( &(adres_input->a));
     
     printf ("\nb=");
-    check_input (input_b);
+    check_input ( &(*adres_input).b);
     
     printf ("\nc=");
-    check_input (input_c);
+    check_input (&(adres_input->c));
 
 }
 
@@ -91,31 +90,32 @@ void check_input (double* check_coeff)
     clear_buf();
 }
 
-int quadratic_solver (const double a, const double b, const double c,
-                        double* x1, double* x2)
+int quadratic_solver (const struct coeffs* adres_input, double* x1, double* x2)
 {
-    assert ( !isnan(a) );
-    assert ( !isnan(b) );
-    assert ( !isnan(c) );
-    assert (isfinite(a));
-    assert (isfinite(b));
-    assert (isfinite(c));
+    assert ( !isnan(adres_input->a) );
+    assert ( !isnan((*adres_input).b));
+    assert ( !isnan(adres_input->c) );
+    assert (isfinite((*adres_input).a));
+    assert (isfinite(adres_input->b));
+    assert (isfinite((*adres_input).c));
     assert ( !isnan(*x1) );
     assert ( !isnan(*x2) );
     assert (isfinite(*x1));
     assert (isfinite(*x2));
+    assert (x1 != 0);
+    assert (x2 != 0);
     
 
     int nRoots = 0;
-    if (is_it_zer0(a, '='))
+    if (is_it_zer0(adres_input->a, '='))
     {
         printf ("Это уравнение, конечно, линейное, но я все-таки решу его\n");
-        if ( !(is_it_zer0(b, '=')) )
+        if ( !(is_it_zer0((*adres_input).b, '=')) )
         {
-            *x1 = -c/b;
+            *x1 = -(*adres_input).a/(adres_input->b);
             nRoots = 1;
         }
-        else if ( is_it_zer0(b, '=') && is_it_zer0(c, '=') )
+        else if ( is_it_zer0((*adres_input).b, '=') && is_it_zer0((*adres_input).c, '=') )
                return nRoots = 8;
         else 
                return nRoots = 0;
@@ -125,20 +125,20 @@ int quadratic_solver (const double a, const double b, const double c,
     double D = 0;
 
     
-        D = b*b-4*a*c;
+        D = (adres_input->b)*(adres_input->b)-4*(adres_input->a)*(adres_input->c);
 
         if( is_it_zer0(D, '<'))
             return nRoots = 0;
         
         if ( is_it_zer0(D, '=') )
         {
-            *x1 = -b/(2*a);
+            *x1 = -(*adres_input).b/(2*(adres_input->a));
             return nRoots = 1;
         }
         if ( is_it_zer0(D, '>'))
         {   double sqrt_D = sqrt(D);
-            *x1 = (-b + sqrt_D)/(2*a);
-            *x2 = (-b - sqrt_D)/(2*a);
+            *x1 = (-(adres_input->b) + sqrt_D)/(2*(adres_input->a));
+            *x2 = (-(adres_input->b) - sqrt_D)/(2*(adres_input->a));
             return nRoots = 2;
         }
         return 0;
@@ -198,7 +198,7 @@ void output (int nRoots, double* x1, double* x2)
             break;
 
         case 2:
-            printf("Уравнение имеет два корня равные %lf %lf\n", *x1, *x2);
+            printf("Уравнение имеет два корня равные %lf %lf \n", *x1, *x2);
             break;
 
         case 8:
@@ -225,11 +225,3 @@ void restart (char* ch)
         }
 }
 
-void read_coeffs_asserts (void)
-{
-
-}
-void quadratic_slover_asserts (void);
-void check_input_asserts (void);
-void is_it_zer0_asserts (void);
-void output_asserts (void);
